@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/DoorReader.iml" filepath="$PROJECT_DIR$/DoorReader.iml" />
+      <module fileurl="file://$PROJECT_DIR$/doorreadermobile/doorreadermobile.iml" filepath="$PROJECT_DIR$/doorreadermobile/doorreadermobile.iml" />
+      <module fileurl="file://$PROJECT_DIR$/doorreadertv/doorreadertv.iml" filepath="$PROJECT_DIR$/doorreadertv/doorreadertv.iml" />
+    </modules>
+  </component>
+</project>

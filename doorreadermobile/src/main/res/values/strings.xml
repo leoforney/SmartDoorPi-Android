@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Door Reader</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- Example General settings -->
+    <string name="pref_header_general">General</string>
+
+    <string name="pref_title_system_ip">System IP Address</string>
+    <string name="pref_default_system_ip">192.168.1.105</string>
+    <string name="safetime">Safe to leave?</string>
+
+</resources>

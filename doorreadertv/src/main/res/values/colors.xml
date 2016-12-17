@@ -1,0 +1,5 @@
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="open">#d32f2f</color>
+    <color name="closed">#388E3C</color>
+</resources>

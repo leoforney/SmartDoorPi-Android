@@ -1,0 +1,105 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:focusable="false">
+
+        <TextView
+            android:id="@+id/PatioDoorView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@color/open"
+            android:elevation="8dp"
+            android:layout_margin="10dp"
+            android:padding="16dp"
+            android:clickable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:text="Patio Door">
+
+        </TextView>
+
+        <TextView
+            android:id="@+id/FrontDoorView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@color/closed"
+            android:elevation="8dp"
+            android:layout_margin="10dp"
+            android:padding="16dp"
+            android:clickable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:text="Front Door">
+
+        </TextView>
+
+        <TextView
+            android:id="@+id/GarageDoorView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@color/closed"
+            android:elevation="8dp"
+            android:layout_margin="10dp"
+            android:padding="16dp"
+            android:clickable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:text="Garage Door">
+
+        </TextView>
+
+        <TextView
+            android:id="@+id/FrontLeftDoorView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@color/open"
+            android:elevation="8dp"
+            android:layout_margin="10dp"
+            android:padding="16dp"
+            android:clickable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:text="Front Left Door">
+
+        </TextView>
+
+        <TextView
+            android:id="@+id/FrontRightDoorView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@color/closed"
+            android:elevation="8dp"
+            android:layout_margin="10dp"
+            android:padding="16dp"
+            android:clickable="true"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:text="Front Right Door">
+
+        </TextView>
+
+        <RelativeLayout
+            android:id="@+id/loadingPanel"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center">
+
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:indeterminate="true"
+                android:padding="24dp" />
+        </RelativeLayout>
+
+
+    </LinearLayout>
+
+</RelativeLayout>
+

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/status"
+        android:title="Door Status"
+        android:icon="@drawable/ic_status" />
+
+    <item
+        android:id="@+id/log"
+        android:icon="@drawable/ic_log"
+        android:title="Log" />
+
+</menu>
