@@ -16,8 +16,6 @@ import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -29,6 +27,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class StatusFragment extends Fragment implements CompoundButton.OnCheckedChangeListener, View.OnClickListener {
 
@@ -134,18 +133,34 @@ public class StatusFragment extends Fragment implements CompoundButton.OnChecked
 
                             SetViewVisibility(true);
 
-                            HashMap<String, Boolean> doorMap = dataSnapshot.getValue(new GenericTypeIndicator<HashMap<String, Boolean>>() {
-                            });
+                            GenericTypeIndicator<List<Door>> type = new GenericTypeIndicator<List<Door>>() {};
 
-                            FrontDoor = doorMap.get("FrontDoor");
+                            List<Door> doorList = dataSnapshot.getValue(type);
+
+                            for (Door door: doorList) {
+                                switch (door.codeName) {
+                                    case "FrontDoor":
+                                        FrontDoor = door.current;
+                                        break;
+                                    case "GarageDoor":
+                                        GarageDoor = door.current;
+                                        break;
+                                    case "PatioDoor":
+                                        PatioDoor = door.current;
+                                        break;
+                                    case "FrontLeftDoor":
+                                        FrontLeftDoor = door.current;
+                                        break;
+                                    case "FrontRightDoor":
+                                        FrontRightDoor = door.current;
+                                        break;
+                                }
+                            }
+
                             ActUponByBooleanAndView(FrontDoor, FrontDoorView);
-                            PatioDoor = doorMap.get("PatioDoor");
                             ActUponByBooleanAndView(PatioDoor, PatioDoorView);
-                            GarageDoor = doorMap.get("GarageDoor");
                             ActUponByBooleanAndView(GarageDoor, GarageDoorView);
-                            FrontLeftDoor = doorMap.get("FrontLeftDoor");
                             ActUponByBooleanAndView(FrontLeftDoor, FrontLeftDoorView);
-                            FrontRightDoor = doorMap.get("FrontRightDoor");
                             ActUponByBooleanAndView(FrontRightDoor, FrontRightDoorView);
 
                             progressBar.setVisibility(View.GONE);
@@ -198,7 +213,8 @@ public class StatusFragment extends Fragment implements CompoundButton.OnChecked
             editor.commit();
             if (isChecked) {
                 FirebaseMessaging.getInstance().subscribeToTopic("notifications");
-            } if (!isChecked) {
+            }
+            if (!isChecked) {
                 FirebaseMessaging.getInstance().unsubscribeFromTopic("notifications");
             }
             Log.d(TAG, "Switch changed: " + pref.getBoolean("Notifications", false) + ", " + isChecked);
@@ -218,6 +234,7 @@ public class StatusFragment extends Fragment implements CompoundButton.OnChecked
 
 
     static boolean returnValue = false;
+
     private static boolean getStartingBoolean() {
         if (mDatabase != null) {
             mDatabase.child("safetime").addValueEventListener(new ValueEventListener() {

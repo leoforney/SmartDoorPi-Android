@@ -11,5 +11,7 @@
     <string name="pref_title_system_ip">System IP Address</string>
     <string name="pref_default_system_ip">192.168.1.105</string>
     <string name="safetime">Safe to leave?</string>
+    <string name="door_configuration">Door Configuration</string>
+    <string name="title_activity_configure">ConfigureActivity</string>
 
 </resources>
