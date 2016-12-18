@@ -7,75 +7,12 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/PatioDoorView"
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/doorRecyclerView"
             android:layout_width="match_parent"
-            android:layout_height="85dp"
-            android:layout_margin="10dp"
-            android:background="@color/open"
-            android:clickable="true"
-            android:elevation="8dp"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:padding="16dp"
-            android:text="Patio Door">
+            android:layout_height="wrap_content">
 
-        </TextView>
-
-        <TextView
-            android:id="@+id/FrontDoorView"
-            android:layout_width="match_parent"
-            android:layout_height="85dp"
-            android:layout_margin="10dp"
-            android:background="@color/closed"
-            android:clickable="true"
-            android:elevation="8dp"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:padding="16dp"
-            android:text="Front Door">
-
-        </TextView>
-
-        <TextView
-            android:id="@+id/GarageDoorView"
-            android:layout_width="match_parent"
-            android:layout_height="85dp"
-            android:layout_margin="10dp"
-            android:background="@color/closed"
-            android:clickable="true"
-            android:elevation="8dp"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:padding="16dp"
-            android:text="Garage Door">
-
-        </TextView>
-
-        <TextView
-            android:id="@+id/FrontLeftDoorView"
-            android:layout_width="match_parent"
-            android:layout_height="85dp"
-            android:layout_margin="10dp"
-            android:background="@color/open"
-            android:clickable="true"
-            android:elevation="8dp"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:padding="16dp"
-            android:text="Front Left Door">
-
-        </TextView>
-
-        <TextView
-            android:id="@+id/FrontRightDoorView"
-            android:layout_width="match_parent"
-            android:layout_height="85dp"
-            android:layout_margin="10dp"
-            android:background="@color/closed"
-            android:clickable="true"
-            android:elevation="8dp"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:padding="16dp"
-            android:text="Front Right Door">
-
-        </TextView>
+        </android.support.v7.widget.RecyclerView>
 
         <RelativeLayout
             android:id="@+id/loadingPanel"

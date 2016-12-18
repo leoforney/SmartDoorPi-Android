@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +16,6 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
-import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -26,7 +27,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.messaging.FirebaseMessaging;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 
 public class StatusFragment extends Fragment implements CompoundButton.OnCheckedChangeListener, View.OnClickListener {
@@ -36,27 +37,17 @@ public class StatusFragment extends Fragment implements CompoundButton.OnChecked
     static DatabaseReference mDatabase;
     static FirebaseAuth mAuth;
 
-    TextView FrontDoorView;
-    TextView PatioDoorView;
-    TextView GarageDoorView;
-    TextView FrontLeftDoorView;
-    TextView FrontRightDoorView;
-
     Button safeTimeButton;
+    RecyclerView recyclerView;
 
     RelativeLayout progressBar;
-
-    boolean FrontDoor;
-    boolean PatioDoor;
-    boolean GarageDoor;
-    boolean FrontLeftDoor;
-    boolean FrontRightDoor;
 
     SharedPreferences pref;
     SharedPreferences.Editor editor;
 
-
     Switch notificationSwitch;
+
+    StatusAdapter adapter;
 
     public static String PREF_KEY = "DOORREADER";
 
@@ -77,13 +68,21 @@ public class StatusFragment extends Fragment implements CompoundButton.OnChecked
 
         this.setRetainInstance(true);
 
-        Log.d(TAG, "Resume called");
-
         context = getActivity();
 
         View v = getView();
 
         notificationSwitch = (Switch) v.findViewById(R.id.notificationSwitch);
+        recyclerView = (RecyclerView) v.findViewById(R.id.doorRecyclerView);
+
+        recyclerView.setLayoutManager(new LinearLayoutManager(v.getContext()));
+
+        adapter = new StatusAdapter();
+
+        List<Door> emptyList = new ArrayList<>();
+        adapter.doorList = emptyList;
+
+        recyclerView.setAdapter(adapter);
 
         pref = context.getSharedPreferences(PREF_KEY, Context.MODE_PRIVATE);
         editor = pref.edit();
@@ -93,12 +92,6 @@ public class StatusFragment extends Fragment implements CompoundButton.OnChecked
         boolean NotificationsEnabled = pref.getBoolean("Notifications", true);
 
         notificationSwitch.setChecked(NotificationsEnabled);
-
-        FrontDoorView = (TextView) v.findViewById(R.id.FrontDoorView);
-        PatioDoorView = (TextView) v.findViewById(R.id.PatioDoorView);
-        GarageDoorView = (TextView) v.findViewById(R.id.GarageDoorView);
-        FrontLeftDoorView = (TextView) v.findViewById(R.id.FrontLeftDoorView);
-        FrontRightDoorView = (TextView) v.findViewById(R.id.FrontRightDoorView);
 
         safeTimeButton = (Button) v.findViewById(R.id.safeTimeButton);
         try {
@@ -133,35 +126,16 @@ public class StatusFragment extends Fragment implements CompoundButton.OnChecked
 
                             SetViewVisibility(true);
 
-                            GenericTypeIndicator<List<Door>> type = new GenericTypeIndicator<List<Door>>() {};
+                            GenericTypeIndicator<List<Door>> type = new GenericTypeIndicator<List<Door>>() {
+                            };
 
                             List<Door> doorList = dataSnapshot.getValue(type);
 
-                            for (Door door: doorList) {
-                                switch (door.codeName) {
-                                    case "FrontDoor":
-                                        FrontDoor = door.current;
-                                        break;
-                                    case "GarageDoor":
-                                        GarageDoor = door.current;
-                                        break;
-                                    case "PatioDoor":
-                                        PatioDoor = door.current;
-                                        break;
-                                    case "FrontLeftDoor":
-                                        FrontLeftDoor = door.current;
-                                        break;
-                                    case "FrontRightDoor":
-                                        FrontRightDoor = door.current;
-                                        break;
-                                }
+                            for (Door door : doorList) {
+                                Log.d(TAG, door.codeName);
                             }
 
-                            ActUponByBooleanAndView(FrontDoor, FrontDoorView);
-                            ActUponByBooleanAndView(PatioDoor, PatioDoorView);
-                            ActUponByBooleanAndView(GarageDoor, GarageDoorView);
-                            ActUponByBooleanAndView(FrontLeftDoor, FrontLeftDoorView);
-                            ActUponByBooleanAndView(FrontRightDoor, FrontRightDoorView);
+                            adapter.setDoorList(doorList);
 
                             progressBar.setVisibility(View.GONE);
                         }
@@ -186,23 +160,7 @@ public class StatusFragment extends Fragment implements CompoundButton.OnChecked
             Visibility = View.GONE;
         }
 
-        FrontDoorView.setVisibility(Visibility);
-        PatioDoorView.setVisibility(Visibility);
-        GarageDoorView.setVisibility(Visibility);
-        FrontLeftDoorView.setVisibility(Visibility);
-        FrontRightDoorView.setVisibility(Visibility);
-
-    }
-
-    public void ActUponByBooleanAndView(boolean isOpen, TextView view) {
-        if (isAdded()) {
-            if (isOpen) {
-                view.setBackgroundColor(getResources().getColor(R.color.open));
-            }
-            if (!isOpen) {
-                view.setBackgroundColor(getResources().getColor(R.color.closed));
-            }
-        }
+        recyclerView.setVisibility(Visibility);
 
     }
 
