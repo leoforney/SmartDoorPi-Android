@@ -52,6 +52,7 @@ dependencies {
     compile 'com.google.firebase:firebase-messaging:10.0.1'
     compile 'com.google.firebase:firebase-auth:10.0.1'
     compile 'com.google.android.gms:play-services-auth:10.0.1'
+    compile 'com.firebaseui:firebase-ui-database:1.0.1'
     compile 'com.pi4j:pi4j-core:1.1'
 }
 

@@ -56,7 +56,7 @@ public class HomeActivity extends AppCompatActivity {
 
         auth = FirebaseAuth.getInstance();
 
-        listener = new AuthListener();
+        listener = AuthListener.getInstance();
 
         auth.addAuthStateListener(listener);
 
