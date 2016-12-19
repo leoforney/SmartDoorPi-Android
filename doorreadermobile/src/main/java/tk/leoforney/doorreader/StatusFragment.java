@@ -16,7 +16,9 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
+import android.widget.TextView;
 
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -47,7 +49,7 @@ public class StatusFragment extends Fragment implements CompoundButton.OnChecked
 
     Switch notificationSwitch;
 
-    StatusAdapter adapter;
+    FirebaseRecyclerAdapter adapter;
 
     public static String PREF_KEY = "DOORREADER";
 
@@ -77,13 +79,6 @@ public class StatusFragment extends Fragment implements CompoundButton.OnChecked
 
         recyclerView.setLayoutManager(new LinearLayoutManager(v.getContext()));
 
-        adapter = new StatusAdapter();
-
-        List<Door> emptyList = new ArrayList<>();
-        adapter.doorList = emptyList;
-
-        recyclerView.setAdapter(adapter);
-
         pref = context.getSharedPreferences(PREF_KEY, Context.MODE_PRIVATE);
         editor = pref.edit();
 
@@ -96,7 +91,7 @@ public class StatusFragment extends Fragment implements CompoundButton.OnChecked
         safeTimeButton = (Button) v.findViewById(R.id.safeTimeButton);
         try {
             if (context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName.equals("1.0-cheaty")) {
-                Log.d(TAG, "Cheaty!!!!");
+                Log.d(TAG, "Cheaty!");
                 safeTimeButton.setVisibility(View.VISIBLE);
             }
         } catch (PackageManager.NameNotFoundException e) {
@@ -116,8 +111,17 @@ public class StatusFragment extends Fragment implements CompoundButton.OnChecked
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 if (firebaseAuth.getCurrentUser() != null) {
-                    mDatabase = FirebaseDatabase.getInstance().getReferenceFromUrl("https://strpidoors.firebaseio.com");
-                    mDatabase.child("doors").addValueEventListener(new ValueEventListener() {
+                    mDatabase = FirebaseDatabase.getInstance().getReferenceFromUrl("https://strpidoors.firebaseio.com").child("doors");
+                    adapter = new FirebaseRecyclerAdapter<Door, DoorViewHolder>(Door.class, R.layout.door_item, DoorViewHolder.class, mDatabase) {
+                        @Override
+                        protected void populateViewHolder(DoorViewHolder viewHolder, Door model, int position) {
+                            viewHolder.doorTextView.setText(model.name);
+                            viewHolder.actUponByBooleanAndView(model.current);
+                        }
+                    };
+                    recyclerView.setAdapter(adapter);
+
+                    mDatabase.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (progressBar.getVisibility() != View.VISIBLE) {
@@ -125,30 +129,39 @@ public class StatusFragment extends Fragment implements CompoundButton.OnChecked
                             }
 
                             SetViewVisibility(true);
-
-                            GenericTypeIndicator<List<Door>> type = new GenericTypeIndicator<List<Door>>() {
-                            };
-
-                            List<Door> doorList = dataSnapshot.getValue(type);
-
-                            for (Door door : doorList) {
-                                Log.d(TAG, door.codeName);
-                            }
-
-                            adapter.setDoorList(doorList);
-
                             progressBar.setVisibility(View.GONE);
                         }
 
                         @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
+                        public void onCancelled(DatabaseError databaseError) {}
                     });
+
+
                 }
             }
         });
 
+    }
+
+    public static class DoorViewHolder extends RecyclerView.ViewHolder {
+
+        TextView doorTextView;
+
+        public DoorViewHolder(View itemView) {
+            super(itemView);
+
+            doorTextView = (TextView) itemView.findViewById(R.id.doorTextView);
+        }
+
+        private void actUponByBooleanAndView(boolean isOpen) {
+            if (isOpen) {
+                doorTextView.setBackgroundColor(doorTextView.getContext().getResources().getColor(R.color.open));
+            }
+            if (!isOpen) {
+                doorTextView.setBackgroundColor(doorTextView.getContext().getResources().getColor(R.color.closed));
+            }
+
+        }
     }
 
     public void SetViewVisibility(boolean Visible) {

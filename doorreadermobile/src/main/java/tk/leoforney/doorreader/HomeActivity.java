@@ -36,13 +36,11 @@ public class HomeActivity extends AppCompatActivity {
 
     public static FirebaseAuth auth;
 
-    final static String TAG = "HomeActivity";
+    final static String TAG = HomeActivity.class.getName();
 
     GoogleApiClient mGoogleApiClient;
 
     private final static int RC_SIGN_IN = 264;
-
-    static AuthListener listener;
 
     private void signIn() {
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
@@ -56,9 +54,16 @@ public class HomeActivity extends AppCompatActivity {
 
         auth = FirebaseAuth.getInstance();
 
-        listener = AuthListener.getInstance();
-
-        auth.addAuthStateListener(listener);
+        auth.addAuthStateListener(new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                if (firebaseAuth.getCurrentUser() != null) {
+                    Log.d(TAG, "Auth changed! " + firebaseAuth.getCurrentUser().toString());
+                } else {
+                    Log.d(TAG, "Not signed in!");
+                }
+            }
+        });
 
         // Configure sign-in to request the user's ID, email address, and basic
         // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
