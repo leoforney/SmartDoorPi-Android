@@ -3,11 +3,15 @@ package tk.leoforney.doorreader;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,8 +19,11 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -25,7 +32,7 @@ import com.pi4j.io.gpio.RaspiPin;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ConfigureFragment extends Fragment {
+public class ConfigureFragment extends Fragment implements View.OnClickListener {
 
     final static String TAG = ConfigureFragment.class.getName();
 
@@ -34,6 +41,10 @@ public class ConfigureFragment extends Fragment {
     Context context;
 
     FirebaseRecyclerAdapter adapter;
+
+    FloatingActionButton fab;
+
+    CoordinatorLayout coordinatorLayout;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -50,6 +61,10 @@ public class ConfigureFragment extends Fragment {
         context = getActivity();
 
         rv = (RecyclerView) v.findViewById(R.id.configureRecyclerView);
+        fab = (FloatingActionButton) v.findViewById(R.id.save_fab_configure);
+        coordinatorLayout = (CoordinatorLayout) v.findViewById(R.id.coordinator_configure);
+
+        fab.setOnClickListener(this);
 
         rv.setLayoutManager(new LinearLayoutManager(context));
         rv.setHasFixedSize(true);
@@ -94,6 +109,36 @@ public class ConfigureFragment extends Fragment {
 
     }
 
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.save_fab_configure:
+                List<Door> doorList = new ArrayList<>();
+                View child;
+                for (int i = 0; i < rv.getChildCount(); i++) {
+                    child = rv.getChildAt(i);
+                    ConfigureItemHolder holder = (ConfigureItemHolder) rv.getChildViewHolder(child);
+                    Log.d(TAG, "Door " + holder.door.name + "@" + holder.door.doorPin);
+                    doorList.add(holder.door);
+                }
+                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                if (database != null) {
+                    database.getReference().child("doors").setValue(doorList).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Snackbar.make(coordinatorLayout, "Successfully saved!", Snackbar.LENGTH_SHORT).show();
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Snackbar.make(coordinatorLayout, "Oh no! Something went wrong!", Snackbar.LENGTH_LONG).show();
+                        }
+                    });
+                }
+                break;
+        }
+    }
+
 
     public static class ConfigureItemHolder extends RecyclerView.ViewHolder implements TextWatcher, AdapterView.OnItemSelectedListener {
         private EditText nameEditText;
@@ -128,7 +173,10 @@ public class ConfigureFragment extends Fragment {
 
         @Override
         public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
+            if (door != null) {
+                door.setCanonicalName(charSequence.toString());
+                Log.d(TAG, "Name changed! " + door.name + " C: " + door.codeName);
+            }
         }
 
         @Override
@@ -138,7 +186,8 @@ public class ConfigureFragment extends Fragment {
 
         @Override
         public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-
+            door.doorPin = (String) ((TextView) view).getText();
+            Log.d(TAG, "Door Pin changed! " + door.doorPin);
         }
 
         @Override
