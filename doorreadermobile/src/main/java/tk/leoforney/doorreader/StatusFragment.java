@@ -1,11 +1,11 @@
 package tk.leoforney.doorreader;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -68,26 +68,29 @@ public class StatusFragment extends Fragment implements CompoundButton.OnChecked
 
         super.onResume();
 
-        this.setRetainInstance(true);
-
         context = getActivity();
 
         View v = getView();
 
         notificationSwitch = (Switch) v.findViewById(R.id.notificationSwitch);
         recyclerView = (RecyclerView) v.findViewById(R.id.doorRecyclerView);
+        progressBar = (RelativeLayout) v.findViewById(R.id.loadingPanel);
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(v.getContext()));
+        recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        recyclerView.setHasFixedSize(true);
 
+        /**
+         * Notification Switch section
+         */
         pref = context.getSharedPreferences(PREF_KEY, Context.MODE_PRIVATE);
         editor = pref.edit();
-
         notificationSwitch.setOnCheckedChangeListener(this);
-
         boolean NotificationsEnabled = pref.getBoolean("Notifications", true);
-
         notificationSwitch.setChecked(NotificationsEnabled);
 
+        /**
+         * Safetime
+         */
         safeTimeButton = (Button) v.findViewById(R.id.safeTimeButton);
         try {
             if (context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName.equals("1.0-cheaty")) {
@@ -99,7 +102,7 @@ public class StatusFragment extends Fragment implements CompoundButton.OnChecked
         }
         safeTimeButton.setOnClickListener(this);
 
-        progressBar = (RelativeLayout) v.findViewById(R.id.loadingPanel);
+        // TODO: Fix that weird bug where the app crashes
 
         SetViewVisibility(false);
 
@@ -111,8 +114,10 @@ public class StatusFragment extends Fragment implements CompoundButton.OnChecked
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 if (firebaseAuth.getCurrentUser() != null) {
-                    mDatabase = FirebaseDatabase.getInstance().getReferenceFromUrl("https://strpidoors.firebaseio.com").child("doors");
-                    adapter = new FirebaseRecyclerAdapter<Door, DoorViewHolder>(Door.class, R.layout.door_item, DoorViewHolder.class, mDatabase) {
+                    mDatabase = FirebaseDatabase.getInstance().getReference();
+                    DatabaseReference reference = FirebaseDatabase.getInstance().getReferenceFromUrl("https://strpidoors.firebaseio.com").child("doors");
+                    adapter = new FirebaseRecyclerAdapter<Door, DoorViewHolder>(Door.class, R.layout.door_item, DoorViewHolder.class, reference) {
+
                         @Override
                         protected void populateViewHolder(DoorViewHolder viewHolder, Door model, int position) {
                             viewHolder.doorTextView.setText(model.name);
@@ -121,7 +126,7 @@ public class StatusFragment extends Fragment implements CompoundButton.OnChecked
                     };
                     recyclerView.setAdapter(adapter);
 
-                    mDatabase.addValueEventListener(new ValueEventListener() {
+                    reference.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (progressBar.getVisibility() != View.VISIBLE) {
@@ -141,6 +146,12 @@ public class StatusFragment extends Fragment implements CompoundButton.OnChecked
             }
         });
 
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        adapter.cleanup();
     }
 
     public static class DoorViewHolder extends RecyclerView.ViewHolder {
@@ -207,8 +218,8 @@ public class StatusFragment extends Fragment implements CompoundButton.OnChecked
     static boolean returnValue = false;
 
     private static boolean getStartingBoolean() {
-        if (mDatabase != null) {
-            mDatabase.child("safetime").addValueEventListener(new ValueEventListener() {
+        if (FirebaseDatabase.getInstance().getReference() != null) {
+            FirebaseDatabase.getInstance().getReference().child("safetime").addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     returnValue = dataSnapshot.getValue(Boolean.class);
@@ -227,7 +238,7 @@ public class StatusFragment extends Fragment implements CompoundButton.OnChecked
     public static void handleBoolean(boolean b) {
         Log.d(TAG, String.valueOf(b));
         if (HomeActivity.auth.getCurrentUser() != null) {
-            mDatabase.child("safetime").setValue(b);
+            FirebaseDatabase.getInstance().getReference().child("safetime").setValue(b);
         }
     }
 }

@@ -3,6 +3,6 @@
 
     <string name="safetime">Safe to leave?</string>
     <string name="door_configuration">Door Configuration</string>
-    <string name="title_activity_configure">Door Configurationy</string>
+    <string name="title_activity_configure">Door Configuration</string>
 
 </resources>

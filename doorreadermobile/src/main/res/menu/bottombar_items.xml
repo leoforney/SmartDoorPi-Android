@@ -10,4 +10,9 @@
         android:icon="@drawable/ic_log"
         android:title="Log" />
 
+    <item
+        android:id="@+id/settings"
+        android:icon="@drawable/ic_settings"
+        android:title="Settings" />
+
 </menu>

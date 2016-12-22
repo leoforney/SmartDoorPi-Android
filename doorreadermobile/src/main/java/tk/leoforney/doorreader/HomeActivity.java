@@ -1,13 +1,14 @@
 package tk.leoforney.doorreader;
 
 
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -37,6 +38,10 @@ public class HomeActivity extends AppCompatActivity {
     public static FirebaseAuth auth;
 
     final static String TAG = HomeActivity.class.getName();
+
+    StatusFragment statusFragment;
+    LogFragment logFragment;
+    ConfigureFragment configureFragment;
 
     GoogleApiClient mGoogleApiClient;
 
@@ -96,11 +101,24 @@ public class HomeActivity extends AppCompatActivity {
             public void onMenuTabSelected(@IdRes int i) {
                 switch (i) {
                     case R.id.status:
-                        switchFragments(new StatusFragment());
+                        if (statusFragment == null) {
+                            statusFragment = new StatusFragment();
+                        }
+                        switchFragments(statusFragment);
                         break;
                     case R.id.log:
-                        switchFragments(new LogFragment());
+                        if (logFragment == null) {
+                            logFragment = new LogFragment();
+                        }
+                        switchFragments(logFragment);
                         break;
+                    case R.id.settings:
+                        if (configureFragment == null) {
+                            configureFragment = new ConfigureFragment();
+                        }
+                        switchFragments(configureFragment);
+                        break;
+
                 }
             }
 
@@ -113,28 +131,9 @@ public class HomeActivity extends AppCompatActivity {
 
     }
 
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        switch (item.getItemId()) {
-            case R.id.configureDoors:
-                Intent activityIntent = new Intent(getApplicationContext(), ConfigureActivity.class);
-                startActivity(activityIntent);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    public boolean onCreateOptionsMenu(Menu menu) {
-
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.topbar_menu_items, menu);
-        return true;
-    }
-
-
     private void switchFragments(Fragment fragment) {
-        getFragmentManager().beginTransaction().replace(R.id.FragmentContainer, fragment).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.FragmentContainer, fragment).commit();
+
     }
 
 
@@ -169,10 +168,22 @@ public class HomeActivity extends AppCompatActivity {
         super.onResume();
         switch (bottomBar.getCurrentTabPosition()) {
             case 0:
-                switchFragments(new StatusFragment());
+                if (statusFragment == null) {
+                    statusFragment = new StatusFragment();
+                }
+                switchFragments(statusFragment);
                 break;
             case 1:
-                switchFragments(new LogFragment());
+                if (logFragment == null) {
+                    logFragment = new LogFragment();
+                }
+                switchFragments(logFragment);
+                break;
+            case 2:
+                if (configureFragment == null) {
+                    configureFragment = new ConfigureFragment();
+                }
+                switchFragments(configureFragment);
                 break;
         }
 
