@@ -17,4 +17,4 @@ android:
     - '.+'
 
 script:
-   - ./gradlew build connectedCheck
+   - ./gradlew build connectedCheck -p doorreadermobile
