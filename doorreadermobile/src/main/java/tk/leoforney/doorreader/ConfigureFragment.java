@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -25,8 +26,12 @@ import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
+import com.google.firebase.database.ValueEventListener;
 import com.pi4j.io.gpio.RaspiPin;
 
 import java.util.ArrayList;
@@ -46,6 +51,10 @@ public class ConfigureFragment extends Fragment implements View.OnClickListener 
 
     CoordinatorLayout coordinatorLayout;
 
+    Button NewDoorButton;
+
+    DatabaseReference ref;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -63,8 +72,10 @@ public class ConfigureFragment extends Fragment implements View.OnClickListener 
         rv = (RecyclerView) v.findViewById(R.id.configureRecyclerView);
         fab = (FloatingActionButton) v.findViewById(R.id.save_fab_configure);
         coordinatorLayout = (CoordinatorLayout) v.findViewById(R.id.coordinator_configure);
+        NewDoorButton = (Button) v.findViewById(R.id.addDoorButton);
 
         fab.setOnClickListener(this);
+        NewDoorButton.setOnClickListener(this);
 
         rv.setLayoutManager(new LinearLayoutManager(context));
         rv.setHasFixedSize(true);
@@ -73,7 +84,7 @@ public class ConfigureFragment extends Fragment implements View.OnClickListener 
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 if (firebaseAuth.getCurrentUser() != null) {
-                    DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("doors");
+                   ref = FirebaseDatabase.getInstance().getReference().child("doors");
                     adapter = new FirebaseRecyclerAdapter<Door, ConfigureItemHolder>(Door.class, R.layout.door_configure_item, ConfigureItemHolder.class, ref) {
 
                         @Override
@@ -86,6 +97,61 @@ public class ConfigureFragment extends Fragment implements View.OnClickListener 
                     };
                     rv.setAdapter(adapter);
                     adapter.notifyDataSetChanged();
+
+
+
+                    SwipeableRecyclerViewTouchListener swipeTouchListener =
+                            new SwipeableRecyclerViewTouchListener(rv,
+                                    new SwipeableRecyclerViewTouchListener.SwipeListener() {
+
+                                        @Override
+                                        public boolean canSwipeLeft(int position) {
+                                            return true;
+                                        }
+
+                                        @Override
+                                        public boolean canSwipeRight(int position) {
+                                            return true;
+                                        }
+
+                                        @Override
+                                        public void onDismissedBySwipeLeft(RecyclerView recyclerView, int[] reverseSortedPositions) {
+
+                                            final List<Door> doorList = new ArrayList<>();
+                                            View child;
+                                            for (int i = 0; i < rv.getChildCount(); i++) {
+                                                child = rv.getChildAt(i);
+                                                ConfigureItemHolder holder = (ConfigureItemHolder) rv.getChildViewHolder(child);
+                                                doorList.add(holder.door);
+                                            }
+
+                                            for (int position : reverseSortedPositions) {
+                                                doorList.remove(position);
+                                            }
+                                            ref.setValue(doorList);
+                                            adapter.notifyDataSetChanged();
+                                        }
+
+                                        @Override
+                                        public void onDismissedBySwipeRight(RecyclerView recyclerView, int[] reverseSortedPositions) {
+                                            final List<Door> doorList = new ArrayList<>();
+                                            View child;
+                                            for (int i = 0; i < rv.getChildCount(); i++) {
+                                                child = rv.getChildAt(i);
+                                                ConfigureItemHolder holder = (ConfigureItemHolder) rv.getChildViewHolder(child);
+                                                doorList.add(holder.door);
+                                            }
+
+                                            for (int position : reverseSortedPositions) {
+                                                doorList.remove(position);
+                                            }
+                                            ref.setValue(doorList);
+                                            adapter.notifyDataSetChanged();
+                                        }
+                                    });
+
+                    rv.addOnItemTouchListener(swipeTouchListener);
+
                 }
             }
         });
@@ -111,19 +177,18 @@ public class ConfigureFragment extends Fragment implements View.OnClickListener 
 
     @Override
     public void onClick(View view) {
+        List<Door> doorList = new ArrayList<>();
+        View child;
+        for (int i = 0; i < rv.getChildCount(); i++) {
+            child = rv.getChildAt(i);
+            ConfigureItemHolder holder = (ConfigureItemHolder) rv.getChildViewHolder(child);
+            Log.d(TAG, "Door " + holder.door.name + "@" + holder.door.doorPin);
+            doorList.add(holder.door);
+        }
         switch (view.getId()) {
             case R.id.save_fab_configure:
-                List<Door> doorList = new ArrayList<>();
-                View child;
-                for (int i = 0; i < rv.getChildCount(); i++) {
-                    child = rv.getChildAt(i);
-                    ConfigureItemHolder holder = (ConfigureItemHolder) rv.getChildViewHolder(child);
-                    Log.d(TAG, "Door " + holder.door.name + "@" + holder.door.doorPin);
-                    doorList.add(holder.door);
-                }
-                FirebaseDatabase database = FirebaseDatabase.getInstance();
-                if (database != null) {
-                    database.getReference().child("doors").setValue(doorList).addOnSuccessListener(new OnSuccessListener<Void>() {
+                if (ref != null) {
+                    ref.setValue(doorList).addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
                             Snackbar.make(coordinatorLayout, "Successfully saved!", Snackbar.LENGTH_SHORT).show();
@@ -134,6 +199,18 @@ public class ConfigureFragment extends Fragment implements View.OnClickListener 
                             Snackbar.make(coordinatorLayout, "Oh no! Something went wrong!", Snackbar.LENGTH_LONG).show();
                         }
                     });
+                }
+                break;
+            case R.id.addDoorButton:
+                if (ref != null) {
+                    Door newDoor = new Door();
+                    newDoor.setCanonicalName("");
+                    newDoor.doorPin = RaspiPin.GPIO_00.getName();
+                    newDoor.current = false;
+                    newDoor.previous = false;
+                    doorList.add(newDoor);
+                    ref.setValue(doorList);
+                    adapter.notifyDataSetChanged();
                 }
                 break;
         }
